@@ -1,0 +1,66 @@
+package com.virtoxed.screenrecorderlivestreamrecorder.utils;
+
+
+
+public class GoogleDriveFileHolder {
+
+    private String id;
+    private String name;
+
+    private long size;
+
+    private Boolean starred;
+    private String mimeType;
+    private String thumbnailLink;
+
+
+
+
+    public Boolean getStarred() {
+        return starred;
+    }
+
+    public void setStarred(Boolean starred) {
+        this.starred = starred;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    public void setThumbnailLink(String thumbnailLink) {
+        this.thumbnailLink = thumbnailLink;
+    }
+
+    public String getThumbnailLink() {
+        return thumbnailLink;
+    }
+}

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--Audio Settings-->
+    <PreferenceCategory android:title="AUDIO">
+        <ListPreference
+            android:key="@string/setting_audio_source"
+            android:title="Audio source"
+            android:defaultValue="@string/default_audio_source"
+            android:entries="@array/entries_audio_source"
+            android:entryValues="@array/values_audio_source"
+            android:icon="@drawable/ic_audio"/>
+    </PreferenceCategory>
+
+    <!--Video Settings-->
+    <PreferenceCategory android:title="VIDEO">
+        <ListPreference
+            android:key="@string/setting_video_resolution"
+            android:dialogTitle="Resolution"
+            android:title="Resolution"
+            android:defaultValue="@string/default_setting_resolution"
+            android:entries="@array/entries_video_resolution"
+            android:entryValues="@array/values_video_resolution"
+            android:icon="@drawable/ic_resolution"
+            android:summary="Choose higher resolution to get great view"/>
+
+        <ListPreference
+            android:key="@string/setting_video_bitrate"
+            android:title="Quality"
+            android:defaultValue="@string/default_setting_bitrate"
+            android:entries="@array/entries_video_bitrate"
+            android:entryValues="@array/values_video_bitrate"
+            android:icon="@drawable/ic_quality"
+            android:dialogTitle="Quality"
+            android:summary="Higher quality means larger size"/>
+
+        <EditTextPreference
+            android:key="@string/setting_video_fps"
+            android:title="FPS"
+            android:inputType="number"
+            android:defaultValue="@string/default_setting_fps"
+            android:dialogTitle="Frame rate"
+            android:icon="@drawable/ic_fps"
+            android:summary="Higher FPS means smoother video but use more CPU"
+            />
+
+    </PreferenceCategory>
+
+    <!--Common Settings-->
+    <PreferenceCategory android:title="CONTROL SETTINGS" >
+        <EditTextPreference
+            android:key="@string/setting_common_countdown"
+            android:defaultValue="@string/default_setting_countdown"
+            android:inputType="number"
+            android:title="Countdown Before Start"
+            android:icon="@drawable/ic_countdown"
+            android:dialogTitle="Countdown Before Start"
+            android:summary="Timer"/>
+
+        <ListPreference
+            android:key="@string/setting_common_orientation"
+           android:title="Orientation"
+            android:defaultValue="@string/default_setting_orientation"
+            android:entries="@array/entries_common_orientation"
+            android:entryValues="@array/values_common_orientation"
+            android:icon="@drawable/ic_orientation"
+            android:summary="Landscape or Portrait"
+            android:dialogTitle="Orientation"/>
+    </PreferenceCategory>
+
+    <!--Camera settings-->
+    <PreferenceCategory
+        android:title="CAMERA">
+        <ListPreference
+            android:key="@string/setting_camera_mode"
+            android:title="Camera mode"
+            android:defaultValue="@string/default_camera_mode"
+            android:entries="@array/entries_camera_mode"
+            android:entryValues="@array/values_camera_mode"
+            android:icon="@drawable/ic_camera_front"/>
+
+<!--        <ListPreference-->
+<!--            android:key="@string/setting_camera_position"-->
+<!--            android:title="Camera position"-->
+<!--            android:defaultValue="@string/default_camera_position"-->
+<!--            android:entries="@array/entries_camera_position"-->
+<!--            android:entryValues="@array/values_camera_position"-->
+<!--            android:icon="@drawable/ic_campos"/>-->
+
+        <ListPreference
+            android:key="@string/setting_camera_size"
+            android:title="Camera size"
+            android:defaultValue="@string/default_camera_size"
+            android:entries="@array/entries_camera_size"
+            android:entryValues="@array/values_camera_size"
+            android:icon="@drawable/ic_camsize"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="OTHERS">
+
+        <Preference
+
+            android:key="@string/key_share_app"
+            android:summary="Share app with your friends"
+            android:title="Share"
+            android:icon="@drawable/ic_share"
+            />
+
+        <Preference
+            android:key="@string/key_privacy_policy"
+            android:title="Privacy Policy"
+            android:icon="@drawable/ic_privacy"
+            />
+
+        <Preference
+
+            android:key="@string/key_app_version"
+            android:title="Version: 1.0"
+            android:icon="@drawable/ic_version"
+            />
+
+    </PreferenceCategory>
+
+
+
+
+
+</PreferenceScreen>

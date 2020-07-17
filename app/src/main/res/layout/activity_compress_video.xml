@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/compresslayout"
+    tools:context=".CompressVideo">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/filename"
+        android:text="Video File Name :"
+        android:textSize="16dp"
+        android:textColor="@color/colorPrimary"
+        android:layout_margin="20dp"
+        android:visibility="invisible"
+        />
+    <ImageView
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_centerInParent="true"
+        android:src="@drawable/add"
+        android:id="@+id/add_video"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/selecttext"
+        android:text="Select Video"
+        android:textSize="25dp"
+        android:layout_marginTop="5dp"
+        android:textColor="@color/colorPrimary"
+        android:layout_below="@+id/add_video"
+        android:layout_centerHorizontal="true"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/per"
+        android:text="0%"
+        android:textSize="25dp"
+        android:layout_marginTop="5dp"
+        android:textColor="@color/colorPrimary"
+        android:layout_below="@+id/add_video"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/view_file"
+        android:text="Compressed Successfully!"
+        android:textSize="25dp"
+        android:textColor="@color/colorPrimary"
+        android:layout_below="@+id/selecttext"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible"
+        android:layout_marginTop="5dp"
+        />
+
+
+</RelativeLayout>

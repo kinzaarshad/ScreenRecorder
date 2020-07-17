@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pref_video_resolution">
+        <item>426x240</item>
+        <item>640x360</item>
+        <item>854x480</item>
+        <item>1280x720</item>
+        <item>1920x1080</item>
+        <item>2560x1440</item>
+        <item>Default</item>
+    </string-array>
+    <string-array name="pref_video_framerate">
+        <item>60 FPS</item>
+        <item>50 FPS</item>
+        <item>48 FPS</item>
+        <item>30 FPS</item>
+        <item>25 FPS</item>
+        <item>24 FPS</item>
+        <item>Default</item>
+    </string-array>
+    <string-array name="pref_video_bitrate">
+        <item>Auto</item>
+        <item>12 Mbps</item>
+        <item>8 Mbps</item>
+        <item>7.5 Mbps</item>
+        <item>5 Mbps</item>
+        <item>4 Mbps</item>
+        <item>2.5 Mbps</item>
+        <item>1.5 Mbps</item>
+        <item>1 Mbps</item>
+    </string-array>
+
+    <string-array name="pref_output_format">
+        <item>DEFAULT</item>
+        <item>MPEG_4</item>
+        <item>THREE_GPP</item>
+        <item>WEBM</item>
+    </string-array>
+
+    <string-array name="pref_video_encoder">
+        <item>DEFAULT</item>
+        <item>H264</item>
+        <item>H263</item>
+        <item>HEVC</item>
+        <item>MPEG_4_SP</item>
+        <item>VP8</item>
+    </string-array>
+
+    <string-array name="pref_audio_source">
+        <item>DEFAULT</item>
+        <item>CAMCODER</item>
+        <item>MIC</item>
+    </string-array>
+
+    <string-array name="pref_audio_source_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string-array name="pref_video_resolution_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+    </string-array>
+
+    <string-array name="pref_orientation">
+        <item>Portrait</item>
+        <item>Landscape</item>
+    </string-array>
+
+    <string-array name="pref_orientation_values">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string-array name="pref_countdown">
+        <item>off</item>
+        <item>3s</item>
+        <item>5s</item>
+        <item>10s</item>
+    </string-array>
+
+    <string-array name="pref_countdown_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+
+
+
+
+
+
+
+
+
+
+    <!--orientations-->
+    <string-array name="entries_common_orientation">
+        <item>Landscape</item>
+        <item>Portrait</item>
+    </string-array>
+
+    <string-array name="values_common_orientation">
+        <item>Landscape</item>
+        <item>Portrait</item>
+    </string-array>
+
+    <!--Camera modes-->
+    <string-array name="entries_camera_mode">
+        <item>Front</item>
+        <item>Back</item>
+        <item>Off</item>
+    </string-array>
+
+    <string-array name="values_camera_mode">
+        <item>Front</item>
+        <item>Back</item>
+        <item>Off</item>
+    </string-array>
+
+    <!--resolutions-->
+    <string-array name="entries_video_resolution">
+        <item>Default</item>
+        <item>SD</item>
+        <item>HD</item>
+        <item>FHD</item>
+    </string-array>
+
+    <string-array name="values_video_resolution">
+        <item>Default</item>
+        <item>SD</item>
+        <item>HD</item>
+        <item>FHD</item>
+    </string-array>
+
+    <!--Camera positions-->
+    <string-array name="entries_camera_position">
+        <item>Top Left</item>
+        <item>Top Right</item>
+        <item>Bottom Left</item>
+        <item>Bottom Right</item>
+        <item>Center</item>
+
+    </string-array>
+
+    <string-array name="values_camera_position">
+        <item>Top Left</item>
+        <item>Top Right</item>
+        <item>Bottom Left</item>
+        <item>Bottom Right</item>
+        <item>Center</item>
+    </string-array>
+
+    <!--Camera size-->
+    <string-array name="entries_camera_size">
+        <item>Small</item>
+        <item>Medium</item>
+        <item>Big</item>
+
+    </string-array>
+
+    <string-array name="values_camera_size">
+        <item>Small</item>
+        <item>Medium</item>
+        <item>Big</item>
+    </string-array>
+
+    <!--Video bitrate-->
+    <string-array name="entries_video_bitrate">
+        <item>Auto</item>
+        <item>1000 Kbps</item>
+        <item>2000 Kbps</item>
+        <item>4000 Kbps</item>
+    </string-array>
+
+    <string-array name="values_video_bitrate">
+        <item>-1</item>
+        <item>1000000</item>
+        <item>2000000</item>
+        <item>4000000</item>
+    </string-array>
+
+    <!--Audio sources-->
+    <string-array name="entries_audio_source">
+        <item>Microphone</item>
+        <item>Internal Sound</item>
+        <item>Mixed</item>
+    </string-array>
+
+    <string-array name="values_audio_source">
+        <item>Microphone</item>
+        <item>Internal Sound</item>
+        <item>Mixed</item>
+    </string-array>
+</resources>

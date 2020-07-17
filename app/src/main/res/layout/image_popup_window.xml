@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#fff">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_close_black_24dp"
+        android:id="@+id/close_img_popup_window"
+        android:layout_alignParentRight="true"
+        android:padding="10dp"/>
+
+    <ImageView
+        android:layout_width="350dp"
+        android:layout_height="250dp"
+        android:id="@+id/popup_img"
+        android:layout_below="@+id/close_img_popup_window"
+        android:layout_centerHorizontal="true"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@+id/popup_img"
+        android:layout_centerHorizontal="true"
+        android:padding="10dp">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/delete_popup_img"
+            android:src="@drawable/ic_delete"
+            android:layout_marginRight="50dp"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/share_popup_img"
+            android:src="@drawable/ic_share"/>
+    </LinearLayout>
+
+</RelativeLayout>

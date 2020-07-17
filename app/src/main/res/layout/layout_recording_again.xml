@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_container"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/bg_circle"
+    android:padding="10dp"
+    >
+
+        <ImageView
+            android:id="@+id/imgCapture"
+            android:layout_width="@dimen/recording_icon_square"
+            android:layout_height="@dimen/recording_icon_square"
+            android:padding="3dp"
+            android:src="@drawable/livefab"
+            tools:ignore="MissingConstraints" />
+
+        <ImageView
+            android:id="@+id/imgPause"
+            android:layout_width="@dimen/recording_icon_square"
+            android:layout_height="@dimen/recording_icon_square"
+            android:padding="3dp"
+            android:src="@drawable/screenshotfab"
+            android:layout_below="@+id/imgCapture"
+            tools:ignore="MissingConstraints" />
+
+        <ImageView
+            android:id="@+id/imgStart"
+            android:layout_width="@dimen/recording_icon_square"
+            android:layout_height="@dimen/recording_icon_square"
+            android:layout_below="@+id/imgPause"
+            android:padding="3dp"
+            android:src="@drawable/startfab"
+            tools:ignore="MissingConstraints" />
+
+        <ImageView
+            android:id="@+id/imgStop"
+            android:layout_width="@dimen/recording_icon_square"
+            android:layout_height="@dimen/recording_icon_square"
+            android:src="@drawable/stopfab"
+            android:padding="3dp"
+            android:layout_below="@+id/imgPause"
+            android:visibility="invisible"
+            tools:ignore="MissingConstraints"
+             />
+        <ImageView
+            android:id="@+id/imgRec"
+            android:layout_width="@dimen/recording_icon_square"
+            android:layout_height="@dimen/recording_icon_square"
+            android:src="@drawable/appicon"
+            android:layout_below="@+id/imgStart"
+            />
+
+        <ImageView
+            android:id="@+id/imgLive"
+            android:layout_width="@dimen/recording_icon_square"
+            android:layout_height="@dimen/recording_icon_square"
+            android:src="@drawable/homefab"
+            android:padding="3dp"
+            android:layout_below="@+id/imgRec"
+            tools:ignore="MissingConstraints" />
+
+
+        <ImageView
+            android:id="@+id/imgSetting"
+            android:layout_width="@dimen/recording_icon_square"
+            android:layout_height="@dimen/recording_icon_square"
+            android:src="@drawable/settingsfab"
+            android:padding="3dp"
+            android:layout_below="@+id/imgLive"
+            tools:ignore="MissingConstraints" />
+
+        <ImageView
+            android:id="@+id/imgClose"
+            android:layout_width="@dimen/recording_icon_square"
+            android:layout_height="@dimen/recording_icon_square"
+            android:src="@drawable/cancelfab"
+            android:padding="3dp"
+            android:layout_below="@id/imgSetting"
+            tools:ignore="MissingConstraints" />
+
+
+</RelativeLayout>
