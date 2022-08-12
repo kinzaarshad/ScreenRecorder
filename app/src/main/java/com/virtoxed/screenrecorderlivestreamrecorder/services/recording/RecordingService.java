@@ -64,7 +64,6 @@ public class RecordingService extends BaseService {
     private static final Object sSync = new Object();
     private VideoSetting mCurrentVideoSetting;
     public static VideoSetting mResultVideo;
-
     public static String outputFile;
     private WindowManager wmgr;
 

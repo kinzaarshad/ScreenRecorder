@@ -1,7 +1,9 @@
 package com.virtoxed.screenrecorderlivestreamrecorder;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
@@ -49,6 +51,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.virtoxed.screenrecorderlivestreamrecorder.helper.StreamProfile;
 
+import java.io.File;
 import java.util.Objects;
 
 import static com.virtoxed.screenrecorderlivestreamrecorder.utils.MyUtils.isMyServiceRunning;
@@ -201,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         mMode = MyUtils.MODE_RECORDING;
 
-        shouldStartControllerService();
+        //shouldStartControllerService();
         mgr=(MediaProjectionManager)getSystemService(MEDIA_PROJECTION_SERVICE);
 
         startActivityForResult(mgr.createScreenCaptureIntent(),
@@ -315,7 +318,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         mImgStop.setVisibility(View.VISIBLE);
                         ControllerService.mImgStart.setVisibility(View.INVISIBLE);
                         ControllerService.mImgStop.setVisibility(View.VISIBLE);
-
+                        ControllerService.contentView.setViewVisibility(R.id.recordL,View.GONE);
+                        ControllerService.contentView.setViewVisibility(R.id.stopL,View.VISIBLE);
+                        ControllerService.manager.notify(2, ControllerService.notification);
 
 
                     }
@@ -333,26 +338,49 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 mImgRec.setVisibility(View.VISIBLE);
                 ControllerService.mImgStop.setVisibility(View.INVISIBLE);
                 ControllerService.mImgStart.setVisibility(View.VISIBLE);
+                ControllerService.contentView.setViewVisibility(R.id.stopL,View.GONE);
+                ControllerService.contentView.setViewVisibility(R.id.recordL,View.VISIBLE);
+                ControllerService.manager.notify(2, ControllerService.notification);
                 if(mMode==MyUtils.MODE_RECORDING){
                     ((RecordingService)cs.mService).insertVideoToGallery();
                     ((RecordingService)cs.mService).saveVideoToDatabase();
                     mWindowManager.addView(mVideoPopupWindowView, paramVideoPopup);
                     Glide.with(MainActivity.this).load(RecordingService.outputFile).into(popupvideo);
+                    popupvideo.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            mVideoPopupWindowView.setVisibility(View.GONE);
+                            Intent vi = new Intent(Intent.ACTION_VIEW);
+                            vi.setDataAndType(Uri.parse(RecordingService.outputFile), "video/mp4");
+                            vi.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(vi);
+                            mWindowManager.removeView(mVideoPopupWindowView);
+                        }
+                    });
                     cancelvideopopup.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             mVideoPopupWindowView.setVisibility(View.GONE);
+                            mWindowManager.removeView(mVideoPopupWindowView);
                         }
                     });
                     delvideopopup.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
 
+                                    File out=new File(RecordingService.outputFile);
+                                    if(out.exists()){
+                                        out.delete();
+                                    }
+                                    mVideoPopupWindowView.setVisibility(View.GONE);
+                            mWindowManager.removeView(mVideoPopupWindowView);
+
                         }
                     });
                     sharevideopopup.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                            mVideoPopupWindowView.setVisibility(View.GONE);
                             Intent sharingIntent = new Intent(Intent.ACTION_SEND);
                             sharingIntent.setType("video/*");
                             sharingIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -360,6 +388,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             Intent startIntent = Intent.createChooser(sharingIntent, "Share Video");
                             startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(startIntent);
+                            mWindowManager.removeView(mVideoPopupWindowView);
 
                         }
                     });
@@ -471,7 +500,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             requestScreenCaptureIntent();
 
         if(hasPermission()) {
-            startControllerService();
+            //startControllerService();
         }
         else{
             requestPermissions();
@@ -515,7 +544,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 mScreenCaptureIntent.putExtra(MyUtils.SCREEN_CAPTURE_INTENT_RESULT_CODE, resultCode);
                 mScreenCaptureResultCode = resultCode;
 
-                shouldStartControllerService();
+                //shouldStartControllerService();
             }
         }
         else{
@@ -588,7 +617,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Bundle bundle = new Bundle();
             bundle.putSerializable(MyUtils.STREAM_PROFILE, mStreamProfile);
             controller.putExtras(bundle);
-            startService(controller);
+            //startService(controller);
         }
     }
     @Override
@@ -603,12 +632,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return super.onOptionsItemSelected(item);
     }
 
-//    @Override
-//    protected void onDestroy() {
-//        super.onDestroy();
-//        if(cs.mService !=null) {
-//            cs.mService.stopSelf();
-//        }
-//    }
 }
 

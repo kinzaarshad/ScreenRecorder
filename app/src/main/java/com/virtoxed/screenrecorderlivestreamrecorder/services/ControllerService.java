@@ -1,5 +1,6 @@
 package com.virtoxed.screenrecorderlivestreamrecorder.services;
 
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -8,6 +9,7 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -26,7 +28,6 @@ import android.media.ToneGenerator;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -53,12 +54,10 @@ import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 
 import com.bumptech.glide.Glide;
 import com.virtoxed.screenrecorderlivestreamrecorder.BuildConfig;
-import com.virtoxed.screenrecorderlivestreamrecorder.MyBroadcastReceiver;
 import com.virtoxed.screenrecorderlivestreamrecorder.controllers.settings.CameraSetting;
 import com.virtoxed.screenrecorderlivestreamrecorder.controllers.settings.SettingManager;
 import com.virtoxed.screenrecorderlivestreamrecorder.MainActivity;
@@ -71,6 +70,7 @@ import com.virtoxed.screenrecorderlivestreamrecorder.services.streaming.Streamin
 import com.virtoxed.screenrecorderlivestreamrecorder.services.streaming.StreamingService.StreamingBinder;
 
 import com.virtoxed.screenrecorderlivestreamrecorder.R;
+import com.virtoxed.screenrecorderlivestreamrecorder.splashVariable;
 import com.virtoxed.screenrecorderlivestreamrecorder.utils.CameraPreview;
 import com.virtoxed.screenrecorderlivestreamrecorder.utils.MyUtils;
 import com.virtoxed.screenrecorderlivestreamrecorder.helper.StreamProfile;
@@ -82,7 +82,6 @@ import java.io.FileOutputStream;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.serenegiant.utils.UIThreadHelper.runOnUiThread;
 import static com.virtoxed.screenrecorderlivestreamrecorder.utils.NotificationHelper.CHANNEL_ID;
@@ -90,6 +89,7 @@ import static com.virtoxed.screenrecorderlivestreamrecorder.utils.NotificationHe
 
 public class ControllerService extends Service {
     private static final String TAG = ControllerService.class.getSimpleName();
+
     private final boolean DEBUG = MyUtils.DEBUG;
     public static BaseService mService;
     private Boolean mRecordingServiceBound = false;
@@ -135,7 +135,7 @@ public class ControllerService extends Service {
     private Intent mResultData;
     private Intent shotIntent;
 
-
+    //for screenshot
     private static final int NOTIFY_ID=9906;
     public static final String EXTRA_RESULT_CODE="resultCode";
     public static final String EXTRA_RESULT_INTENT="resultIntent";
@@ -160,17 +160,28 @@ public class ControllerService extends Service {
     final private ToneGenerator beeper=
             new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
 
-
+    //for popup windows
     private ImageView delimgpopup,cancelimgpopup,shareimgpopup,popupimg;
     private ImageView delvideopopup,cancelvideopopup,sharevideopopup,popupvideo;
 
+    //for removing chathead
     private ImageView remove_image_view;
     private Point szWindow = new Point();
     private View removeFloatingWidgetView;
-    static NotificationManager manager;
-    RemoteViews contentView;
+    private int x_init_cord, y_init_cord, x_init_margin, y_init_margin;
+    private boolean isLeft = true;
+    private int initialX;         //x_init_margin
+    private int initialY;         //y_init_margin
+    private float initialTouchX;       //x_init_cord
+    private float initialTouchY;       //y_init_cord
+    int Xdiff;
+    int Ydiff;
+
+    //for notification
+    public static NotificationManager manager;
+    public static RemoteViews contentView;
     NotificationCompat.Builder notificationBuilder;
-    Notification notification;
+    public static Notification notification;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -333,8 +344,10 @@ public class ControllerService extends Service {
                         manager.notify(2, notification);
                         mRecordingStarted = true;
                         mService.startPerformService();
-                        MainActivity.mImgRec.setVisibility(View.INVISIBLE);
-                        MainActivity.mImgStop.setVisibility(View.VISIBLE);
+                        if(splashVariable.sp.contains("third")) {
+                            MainActivity.mImgRec.setVisibility(View.INVISIBLE);
+                            MainActivity.mImgStop.setVisibility(View.VISIBLE);
+                        }
                         mImgStart.setVisibility(View.INVISIBLE);
                         mImgStop.setVisibility(View.VISIBLE);
 
@@ -366,8 +379,10 @@ public class ControllerService extends Service {
                 mRecordingStarted = false;
 
                 mService.stopPerformService();
-                MainActivity.mImgStop.setVisibility(View.INVISIBLE);
-                MainActivity.mImgRec.setVisibility(View.VISIBLE);
+                if(splashVariable.sp.contains("third")) {
+                    MainActivity.mImgStop.setVisibility(View.INVISIBLE);
+                    MainActivity.mImgRec.setVisibility(View.VISIBLE);
+                }
                 mImgStop.setVisibility(View.INVISIBLE);
                 mImgStart.setVisibility(View.VISIBLE);
 
@@ -378,21 +393,45 @@ public class ControllerService extends Service {
                     ((RecordingService)mService).saveVideoToDatabase();
                     mWindowManager.addView(mVideoPopupWindowView, paramVideoPopup);
                     Glide.with(ControllerService.this).load(RecordingService.outputFile).into(popupvideo);
+                    popupvideo.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            //   mVideoPopupWindowView.setVisibility(View.GONE);
+                            Intent vi = new Intent(Intent.ACTION_VIEW);
+                            vi.setDataAndType(Uri.parse(RecordingService.outputFile), "video/mp4");
+                            vi.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            ControllerService.this.startActivity(vi);
+                            mWindowManager.removeView(mVideoPopupWindowView);
+                        }
+                    });
                     cancelvideopopup.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            mVideoPopupWindowView.setVisibility(View.GONE);
+                            //   mVideoPopupWindowView.setVisibility(View.GONE);
+                            mWindowManager.removeView(mVideoPopupWindowView);
                         }
                     });
                     delvideopopup.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
 
+
+
+                            File out=new File(RecordingService.outputFile);
+                            if(out.exists()){
+                                out.delete();
+                            }
+                            // mVideoPopupWindowView.setVisibility(View.GONE);
+                            mWindowManager.removeView(mVideoPopupWindowView);
+
+
+
                         }
                     });
                     sharevideopopup.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                            //    mVideoPopupWindowView.setVisibility(View.GONE);
                             Intent sharingIntent = new Intent(Intent.ACTION_SEND);
                             sharingIntent.setType("video/*");
                             sharingIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -400,6 +439,7 @@ public class ControllerService extends Service {
                             Intent startIntent = Intent.createChooser(sharingIntent, "Share Video");
                             startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             ControllerService.this.startActivity(startIntent);
+                            mWindowManager.removeView(mVideoPopupWindowView);
 
                         }
                     });
@@ -414,54 +454,51 @@ public class ControllerService extends Service {
             }
         }
     };
-BroadcastReceiver screensht=new BroadcastReceiver() {
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        Timer buttonTimer = new Timer();
-        buttonTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        startCapture();
-                    }
-                });
-            }
-        }, 1000);
+    BroadcastReceiver screensht=new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Timer buttonTimer = new Timer();
+            buttonTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            startCapture();
+                        }
+                    });
+                }
+            }, 1000);
 
-    }
-};
+        }
+    };
 
     BroadcastReceiver ext=new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             stopForeground(true);
+            splashVariable.sp="first";
             stopSelf();
+
+
         }
     };
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onCreate() {
         super.onCreate();
         mgr=(MediaProjectionManager)getSystemService(MEDIA_PROJECTION_SERVICE);
         wmgr=(WindowManager)getSystemService(WINDOW_SERVICE);
 
-
         registerReceiver(rec,new IntentFilter("rec"));
         registerReceiver(stp,new IntentFilter("stp"));
         registerReceiver(screensht,new IntentFilter("ss"));
         registerReceiver(ext,new IntentFilter("ext"));
 
-        //Init LayoutInflater
-        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
 
-        addRemoveView(inflater);
 
         if(DEBUG) Log.i(TAG, "StreamingControllerService: onCreate");
 
         updateScreenSize();
-
         if(paramViewRoot==null) {
             initParam();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -501,16 +538,11 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .build();
 
-
-        Toast.makeText(this,"here i am ",Toast.LENGTH_LONG).show();
-
         startForeground(2, notification);
-        //}
 
-
-        // }
         if(mViewRoot == null)
             initializeViews();
+
     }
     public void low(){
 
@@ -531,16 +563,10 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .build();
 
-
-        Toast.makeText(this,"here i am ",Toast.LENGTH_LONG).show();
-
         startForeground(2, notification);
-        //}
-
-
-        // }
         if(mViewRoot == null)
             initializeViews();
+
     }
     public void another(){
         Intent intent = new Intent(this, MyBroadcastReciever.class);
@@ -581,7 +607,6 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
         contentView.setOnClickPendingIntent(R.id.home_not_id, pIntent3);
         contentView.setOnClickPendingIntent(R.id.exit_not_id, pIntent4);
     }
-
     public static class MyBroadcastReciever extends BroadcastReceiver {
         public static final String rec_start = "OK";
         public static final String rec_stop = "OKA";
@@ -654,6 +679,16 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
             }
         }
     }
+    private void getWindowManagerDefaultDisplay() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2)
+
+            mWindowManager.getDefaultDisplay().getSize(szWindow);
+        else {
+            int w = mWindowManager.getDefaultDisplay().getWidth();
+            int h = mWindowManager.getDefaultDisplay().getHeight();
+            szWindow.set(w, h);
+        }
+    }
     /*  Add Remove View to Window Manager  */
     private View addRemoveView(LayoutInflater inflater) {
         //Inflate the removing view layout we created
@@ -684,7 +719,112 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
         mWindowManager.addView(removeFloatingWidgetView, paramRemove);
         return remove_image_view;
     }
+    /*  Add Floating Widget View to Window Manager  */
+    private void addFloatingWidgetView(LayoutInflater inflater) {
+        //Inflate the floating view layout we created
+        mViewRoot = inflater.inflate(R.layout.layout_recording_again, null);
+        int flags;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            flags = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        } else {
+            flags = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        }
+        //Add the view to the window.
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                flags,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                PixelFormat.TRANSLUCENT);
 
+        //Specify the view position
+        params.gravity = Gravity.TOP | Gravity.LEFT;
+
+        //Initially view will be added to top-left corner, you change x-y coordinates according to your need
+        params.x = 0;
+        params.y = 100;
+
+        //Add the view to the window
+        mWindowManager.addView(mViewRoot, params);
+
+
+    }
+    /*  Reset position of Floating Widget view on dragging  */
+    private void resetPosition(int x_cord_now) {
+        if (x_cord_now <= szWindow.x / 2) {
+            isLeft = true;
+            moveToLeft(x_cord_now);
+        } else {
+            isLeft = false;
+            moveToRight(x_cord_now);
+        }
+
+    }
+
+
+    /*  Method to move the Floating widget view to Left  */
+    private void moveToLeft(final int current_x_cord) {
+        final int x = szWindow.x - current_x_cord;
+
+        new CountDownTimer(500, 5) {
+            //get params of Floating Widget view
+            WindowManager.LayoutParams mParams = (WindowManager.LayoutParams) mViewRoot.getLayoutParams();
+
+            public void onTick(long t) {
+                long step = (500 - t) / 5;
+
+                mParams.x = 0 - (int) (current_x_cord * current_x_cord * step);
+
+                //If you want bounce effect uncomment below line and comment above line
+                // mParams.x = 0 - (int) (double) bounceValue(step, x);
+
+
+                //Update window manager for Floating Widget
+                mWindowManager.updateViewLayout(mViewRoot, mParams);
+            }
+
+            public void onFinish() {
+                mParams.x = 0;
+
+                //Update window manager for Floating Widget
+                mWindowManager.updateViewLayout(mViewRoot, mParams);
+            }
+        }.start();
+    }
+
+    /*  Method to move the Floating widget view to Right  */
+    private void moveToRight(final int current_x_cord) {
+
+        new CountDownTimer(500, 5) {
+            //get params of Floating Widget view
+            WindowManager.LayoutParams mParams = (WindowManager.LayoutParams) mViewRoot.getLayoutParams();
+
+            public void onTick(long t) {
+                long step = (500 - t) / 5;
+
+                mParams.x = (int) (szWindow.x + (current_x_cord * current_x_cord * step) - mViewRoot.getWidth());
+
+                //If you want bounce effect uncomment below line and comment above line
+                //  mParams.x = szWindow.x + (int) (double) bounceValue(step, x_cord_now) - mFloatingWidgetView.getWidth();
+
+                //Update window manager for Floating Widget
+                mWindowManager.updateViewLayout(mViewRoot, mParams);
+            }
+
+            public void onFinish() {
+                mParams.x = szWindow.x - mViewRoot.getWidth();
+
+                //Update window manager for Floating Widget
+                mWindowManager.updateViewLayout(mViewRoot, mParams);
+            }
+        }.start();
+    }
+
+    /*  Get Bounce value if you want to make bounce effect to your Floating Widget */
+    private double bounceValue(long step, long scale) {
+        double value = scale * Math.exp(-0.055 * step) * Math.cos(0.08 * step);
+        return value;
+    }
     private void onFloatingWidgetLongClick() {
         //Get remove Floating view params
         WindowManager.LayoutParams removeParams = (WindowManager.LayoutParams) removeFloatingWidgetView.getLayoutParams();
@@ -710,7 +850,7 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
     public Handler getHandler() {
         return(handler);
     }
-
+    File file;
     public void processImage(final byte[] png) {
         new Thread() {
             @Override
@@ -724,7 +864,7 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
                 int n = 10000;
                 n = generator.nextInt(n);
                 String fname = "Screenshot-"+ n +".png";
-                File file = new File (myDir, fname);
+                file = new File (myDir, fname);
                 if (file.exists ()) file.delete ();
                 try {
                     FileOutputStream out = new FileOutputStream(file);
@@ -781,12 +921,23 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
             delimgpopup.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    
+
+
+
+
+                    file.delete();
+                    mImgPopupWindowView.setVisibility(View.GONE);
+
+
+
+
+
                 }
             });
             shareimgpopup.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    mImgPopupWindowView.setVisibility(View.GONE);
                     Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
                     sharingIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     sharingIntent.setType("image/*");
@@ -795,7 +946,7 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
                     Intent startIntent = Intent.createChooser(sharingIntent, "Share Image");
                     startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     ControllerService.this.startActivity(startIntent);
-                    mImgPopupWindowView.setVisibility(View.GONE);
+
 
                 }
             });
@@ -1026,6 +1177,29 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
 //        super.onConfigurationChanged(newConfig);
+        getWindowManagerDefaultDisplay();
+
+        WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) mViewRoot.getLayoutParams();
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+
+
+            if (layoutParams.y + (mViewRoot.getHeight() + getStatusBarHeight()) > szWindow.y) {
+                layoutParams.y = szWindow.y - (mViewRoot.getHeight() + getStatusBarHeight());
+                mWindowManager.updateViewLayout(mViewRoot, layoutParams);
+            }
+
+            if (layoutParams.x != 0 && layoutParams.x < szWindow.x) {
+                resetPosition(szWindow.x);
+            }
+
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+
+            if (layoutParams.x > szWindow.x) {
+                resetPosition(szWindow.x);
+            }
+
+        }
         if(DEBUG) Log.i(TAG, "onConfigurationChanged: DETECTED" + newConfig.orientation);
         updateScreenSize();
 
@@ -1057,20 +1231,26 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
         if(DEBUG) Log.i(TAG, "StreamingControllerService: initializeViews()");
 
         mViewRoot = LayoutInflater.from(this).inflate(R.layout.layout_recording_again, null);
+
         mVideoPopupWindowView = LayoutInflater.from(this).inflate(R.layout.video_popup_window, null);
 
         View mViewCountdown = LayoutInflater.from(this).inflate(R.layout.layout_countdown, null);
 
 
 
-        paramViewRoot.gravity = Gravity.CENTER_VERTICAL | Gravity.START;
-        paramViewRoot.x = 0;
-        paramViewRoot.y = 0;
+//        paramViewRoot.gravity = Gravity.CENTER_VERTICAL | Gravity.START;
+//        paramViewRoot.x = 0;
+//        paramViewRoot.y = 0;
 
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        getWindowManagerDefaultDisplay();
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+
+        addRemoveView(inflater);
+        addFloatingWidgetView(inflater);
         mWindowManager.addView(mViewCountdown, paramCountdown);
 
-        mWindowManager.addView(mViewRoot, paramViewRoot);
+    //    mWindowManager.addView(mViewRoot, paramViewRoot);
 
         mCountdownLayout = mViewCountdown.findViewById(R.id.countdown_container);
         mTvCountdown = mViewCountdown.findViewById(R.id.tvCountDown);
@@ -1098,6 +1278,8 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
         toggleView(mImgStop, View.INVISIBLE);
         toggleNavigationButton(View.GONE);
 
+
+        //For live Stream Camera
         mImgCapture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1111,6 +1293,7 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
             }
         });
 
+        //for screenshot
         mImgPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1144,7 +1327,7 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
             }
         });
 
-
+      //for open settings activity
         mImgSetting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1158,6 +1341,7 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
             }
         });
 
+        //for start recording
         mImgStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1182,9 +1366,13 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
                             toggleView(mViewRoot, View.VISIBLE);
                             mRecordingStarted = true;
                             mService.startPerformService();
-                            MainActivity.mImgRec.setVisibility(View.INVISIBLE);
-                            MainActivity.mImgStop.setVisibility(View.VISIBLE);
-
+                            if(splashVariable.sp.contains("third")) {
+                                MainActivity.mImgRec.setVisibility(View.INVISIBLE);
+                                MainActivity.mImgStop.setVisibility(View.VISIBLE);
+                            }
+                            contentView.setViewVisibility(R.id.recordL,View.GONE);
+                            contentView.setViewVisibility(R.id.stopL,View.VISIBLE);
+                            manager.notify(2, notification);
 
                         }
                     }.start();
@@ -1199,6 +1387,7 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
             }
         });
 
+        //for stopping recording
         mImgStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1209,30 +1398,58 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
                     mRecordingStarted = false;
 
                     mService.stopPerformService();
-                    MainActivity.mImgStop.setVisibility(View.INVISIBLE);
-                    MainActivity.mImgRec.setVisibility(View.VISIBLE);
-
+                    if(splashVariable.sp.contains("third")) {
+                        MainActivity.mImgStop.setVisibility(View.INVISIBLE);
+                        MainActivity.mImgRec.setVisibility(View.VISIBLE);
+                    }
+                    contentView.setViewVisibility(R.id.stopL,View.GONE);
+                    contentView.setViewVisibility(R.id.recordL,View.VISIBLE);
+                    manager.notify(2, notification);
 
                     if(mMode==MyUtils.MODE_RECORDING){
                         ((RecordingService)mService).insertVideoToGallery();
                         ((RecordingService)mService).saveVideoToDatabase();
+
                         mWindowManager.addView(mVideoPopupWindowView, paramVideoPopup);
                         Glide.with(ControllerService.this).load(RecordingService.outputFile).into(popupvideo);
+                        popupvideo.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                //   mVideoPopupWindowView.setVisibility(View.GONE);
+                                Intent vi = new Intent(Intent.ACTION_VIEW);
+                                vi.setDataAndType(Uri.parse(RecordingService.outputFile), "video/mp4");
+                                vi.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                ControllerService.this.startActivity(vi);
+                                mWindowManager.removeView(mVideoPopupWindowView);
+                            }
+                        });
                         cancelvideopopup.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                mVideoPopupWindowView.setVisibility(View.GONE);
+                                //    mVideoPopupWindowView.setVisibility(View.GONE);
+                                mWindowManager.removeView(mVideoPopupWindowView);
                             }
                         });
                         delvideopopup.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
 
+
+
+                                File out=new File(RecordingService.outputFile);
+                                if(out.exists()){
+                                    out.delete();
+                                }
+                                //    mVideoPopupWindowView.setVisibility(View.GONE);
+                                mWindowManager.removeView(mVideoPopupWindowView);
+
+
                             }
                         });
                         sharevideopopup.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
+                                //    mVideoPopupWindowView.setVisibility(View.GONE);
                                 Intent sharingIntent = new Intent(Intent.ACTION_SEND);
                                 sharingIntent.setType("video/*");
                                 sharingIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -1240,6 +1457,7 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
                                 Intent startIntent = Intent.createChooser(sharingIntent, "Share Video");
                                 startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                 ControllerService.this.startActivity(startIntent);
+                                mWindowManager.removeView(mVideoPopupWindowView);
 
                             }
                         });
@@ -1262,18 +1480,22 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
                 if(!MainActivity.active) {
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.setAction(MyUtils.ACTION_OPEN_LIVE_ACTIVITY);
+                    intent.setAction(MyUtils.ACTION_OPEN_VIDEO_MANAGER_ACTIVITY);
                     startActivity(intent);
                 }
             }
         });
 
+        //FOR CLOSING SERVICE
         mImgClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(mRecordingStarted){
                     mImgStop.performClick();
                 }
+                splashVariable.sp="first";
+//                toggleView(mViewRoot,View.GONE);
+//                toggleView(mCameraLayout,View.GONE);
 
                 stopService();
 
@@ -1292,61 +1514,237 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
         });
 
         mViewRoot.findViewById(R.id.root_container).setOnTouchListener(new View.OnTouchListener() {
-            private int initialX;
-            private int initialY;
-            private float initialTouchX;
-            private float initialTouchY;
+            long time_start = 0, time_end = 0;
+
+            boolean isLongClick = false;//variable to judge if user click long press
+            boolean inBounded = false;//variable to judge if floating view is bounded to remove view
+            int remove_img_width = 0, remove_img_height = 0;
+
+            Handler handler_longClick = new Handler();
+            Runnable runnable_longClick = new Runnable() {
+                @Override
+                public void run() {
+                    //On Floating Widget Long Click
+
+                    //Set isLongClick as true
+                    isLongClick = true;
+
+                    //Set remove widget view visibility to VISIBLE
+                    removeFloatingWidgetView.setVisibility(View.VISIBLE);
+
+                    onFloatingWidgetLongClick();
+                }
+            };
+
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                //Get Floating widget view params
+                WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) mViewRoot.getLayoutParams();
+
+                //get the touch location coordinates
+                int x_cord = (int) event.getRawX();
+                int y_cord = (int) event.getRawY();
+
+                int x_cord_Destination, y_cord_Destination;
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
+                         time_start = System.currentTimeMillis();
+
+                        handler_longClick.postDelayed(runnable_longClick, 600);
+
+                        remove_img_width = remove_image_view.getLayoutParams().width;
+                        remove_img_height = remove_image_view.getLayoutParams().height;
+
+                        x_init_cord = x_cord;
+                        y_init_cord = y_cord;
 
                         //remember the initial position.
-                        initialX = paramViewRoot.x;
-                        initialY = paramViewRoot.y;
+                        x_init_margin = layoutParams.x;
+                        y_init_margin = layoutParams.y;
 
-                        //get the touch location
-                        initialTouchX = event.getRawX();
-                        initialTouchY = event.getRawY();
+
+
+
+//                        //remember the initial position.
+//                        initialX = paramViewRoot.x;       //x_init_margin
+//                        initialY = paramViewRoot.y;       //y_init_margin
+//
+//                        //get the touch location
+//                        initialTouchX = event.getRawX();   //x_init_cord
+//                        initialTouchY = event.getRawY();   //y_init_cord
                         return true;
                     case MotionEvent.ACTION_UP:
-                        if(event.getRawX() < mScreenWidth/2) {
-                            paramViewRoot.x = 0;
+                        isLongClick = false;
+                        removeFloatingWidgetView.setVisibility(View.GONE);
+                        remove_image_view.getLayoutParams().height = remove_img_height;
+                        remove_image_view.getLayoutParams().width = remove_img_width;
+                        handler_longClick.removeCallbacks(runnable_longClick);
+
+                        //If user drag and drop the floating widget view into remove view then stop the service
+                        if (inBounded) {
+//                            splashVariable.sp="first";
+//                            stopSelf();
+                           toggleView(mViewRoot,View.GONE);
+
+                            inBounded = false;
+                            break;
                         }
-                        else {
-                            paramViewRoot.x = mScreenWidth;
-                        }
-                        paramViewRoot.y = initialY + (int) (event.getRawY() - initialTouchY);
-
-                        //Update the layout with new X & Y coordinate
-                        mWindowManager.updateViewLayout(mViewRoot, paramViewRoot);
 
 
-                        int Xdiff = (int) (event.getRawX() - initialTouchX);
-                        int Ydiff = (int) (event.getRawY() - initialTouchY);
+                        //Get the difference between initial coordinate and current coordinate
+                        int x_diff = x_cord - x_init_cord;
+                        int y_diff = y_cord - y_init_cord;
 
-                        //The check for Xdiff <10 && YDiff< 10 because sometime elements moves a little while clicking.
+                        //The check for x_diff <5 && y_diff< 5 because sometime elements moves a little while clicking.
                         //So that is click event.
-                        if (Xdiff < 20 && Ydiff < 20) {
-                            if (isViewCollapsed()) {
-                                //When user clicks on the image view of the collapsed layout,
-                                //visibility of the collapsed layout will be changed to "View.GONE"
-                                //and expanded view will become visible.
-                                toggleNavigationButton(View.VISIBLE);
-                            }
-                            else {
-                                toggleNavigationButton(View.GONE);
-                            }
+                        if (Math.abs(x_diff) < 5 && Math.abs(y_diff) < 5) {
+                            time_end = System.currentTimeMillis();
+
+                            //Also check the difference between start time and end time should be less than 300ms
+                            if ((time_end - time_start) < 300)
+                                if (isViewCollapsed()) {
+                                    //When user clicks on the image view of the collapsed layout,
+                                    //visibility of the collapsed layout will be changed to "View.GONE"
+                                    //and expanded view will become visible.
+                                    toggleNavigationButton(View.VISIBLE);
+                                }
+                                else {
+                                    toggleNavigationButton(View.GONE);
+                                }
+
                         }
+
+                        y_cord_Destination = y_init_margin + y_diff;
+
+                        int barHeight = getStatusBarHeight();
+                        if (y_cord_Destination < 0) {
+                            y_cord_Destination = 0;
+                        } else if (y_cord_Destination + (mViewRoot.getHeight() + barHeight) > szWindow.y) {
+                            y_cord_Destination = szWindow.y - (mViewRoot.getHeight() + barHeight);
+                        }
+
+                        layoutParams.y = y_cord_Destination;
+
+                        inBounded = false;
+
+                        //reset position if user drags the floating view
+                        resetPosition(x_cord);
+
+
+
+
+
+
+
+
+
+
+
+//                        if(event.getRawX() < mScreenWidth/2) {
+//                            paramViewRoot.x = 0;
+//                        }
+//                        else {
+//                            paramViewRoot.x = mScreenWidth;
+//                        }
+//                        paramViewRoot.y = initialY + (int) (event.getRawY() - initialTouchY);
+//
+//                        //Update the layout with new X & Y coordinate
+//                        mWindowManager.updateViewLayout(mViewRoot, paramViewRoot);
+//
+//
+//                        Xdiff = (int) (event.getRawX() - initialTouchX);
+//                        Ydiff = (int) (event.getRawY() - initialTouchY);
+//
+//                        //The check for Xdiff <10 && YDiff< 10 because sometime elements moves a little while clicking.
+//                        //So that is click event.
+//                        if (Xdiff < 20 && Ydiff < 20) {
+//                            //           time_end = System.currentTimeMillis();
+//                            if (isViewCollapsed()) {
+//                                //When user clicks on the image view of the collapsed layout,
+//                                //visibility of the collapsed layout will be changed to "View.GONE"
+//                                //and expanded view will become visible.
+//                                toggleNavigationButton(View.VISIBLE);
+//                            }
+//                            else {
+//                                toggleNavigationButton(View.GONE);
+//                            }
+//                        }
+
+
+
+
+
+
                         return true;
                     case MotionEvent.ACTION_MOVE:
-                        //Calculate the X and Y coordinates of the view.
-                        paramViewRoot.x = initialX + (int) (event.getRawX() - initialTouchX);
-                        paramViewRoot.y = initialY + (int) (event.getRawY() - initialTouchY);
+                        int x_diff_move = x_cord - x_init_cord;
+                        int y_diff_move = y_cord - y_init_cord;
+
+                        x_cord_Destination = x_init_margin + x_diff_move;
+                        y_cord_Destination = y_init_margin + y_diff_move;
+
+                        //If user long click the floating view, update remove view
+                        if (isLongClick) {
+                            int x_bound_left = szWindow.x / 2 - (int) (remove_img_width * 1.5);
+                            int x_bound_right = szWindow.x / 2 + (int) (remove_img_width * 1.5);
+                            int y_bound_top = szWindow.y - (int) (remove_img_height * 1.5);
+
+                            //If Floating view comes under Remove View update Window Manager
+                            if ((x_cord >= x_bound_left && x_cord <= x_bound_right) && y_cord >= y_bound_top) {
+                                inBounded = true;
+
+                                int x_cord_remove = (int) ((szWindow.x - (remove_img_height * 1.5)) / 2);
+                                int y_cord_remove = (int) (szWindow.y - ((remove_img_width * 1.5) + getStatusBarHeight()));
+
+                                if (remove_image_view.getLayoutParams().height == remove_img_height) {
+                                    remove_image_view.getLayoutParams().height = (int) (remove_img_height * 1.5);
+                                    remove_image_view.getLayoutParams().width = (int) (remove_img_width * 1.5);
+
+                                    WindowManager.LayoutParams param_remove = (WindowManager.LayoutParams) removeFloatingWidgetView.getLayoutParams();
+                                    param_remove.x = x_cord_remove;
+                                    param_remove.y = y_cord_remove;
+
+                                    mWindowManager.updateViewLayout(removeFloatingWidgetView, param_remove);
+                                }
+
+                                layoutParams.x = x_cord_remove + (Math.abs(removeFloatingWidgetView.getWidth() - mViewRoot.getWidth())) / 2;
+                                layoutParams.y = y_cord_remove + (Math.abs(removeFloatingWidgetView.getHeight() - mViewRoot.getHeight())) / 2;
+
+                                //Update the layout with new X & Y coordinate
+                                mWindowManager.updateViewLayout(mViewRoot, layoutParams);
+                                break;
+                            } else {
+                                //If Floating window gets out of the Remove view update Remove view again
+                                inBounded = false;
+                                remove_image_view.getLayoutParams().height = remove_img_height;
+                                remove_image_view.getLayoutParams().width = remove_img_width;
+                                if (isViewCollapsed()) {
+                                    //When user clicks on the image view of the collapsed layout,
+                                    //visibility of the collapsed layout will be changed to "View.GONE"
+                                    //and expanded view will become visible.
+                                    toggleNavigationButton(View.VISIBLE);
+                                }
+                                else {
+                                    toggleNavigationButton(View.GONE);
+                                }
+                            }
+
+                        }
+
+
+                        layoutParams.x = x_cord_Destination;
+                        layoutParams.y = y_cord_Destination;
 
                         //Update the layout with new X & Y coordinate
-                        mWindowManager.updateViewLayout(mViewRoot, paramViewRoot);
+                        mWindowManager.updateViewLayout(mViewRoot, layoutParams);
+
+//                        //Calculate the X and Y coordinates of the view.
+//                        paramViewRoot.x = initialX + (int) (event.getRawX() - initialTouchX);
+//                        paramViewRoot.y = initialY + (int) (event.getRawY() - initialTouchY);
+//
+//                        //Update the layout with new X & Y coordinate
+//                        mWindowManager.updateViewLayout(mViewRoot, paramViewRoot);
                         return true;
                 }
 
@@ -1361,15 +1759,7 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
 
             }
         });
-        mViewRoot.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                removeFloatingWidgetView.setVisibility(View.VISIBLE);
 
-                onFloatingWidgetLongClick();
-                return true;
-            }
-        });
     }
 
 
@@ -1495,8 +1885,14 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
         {
             mWindowManager.removeView(mImgPopupWindowView);
         }
-        if (removeFloatingWidgetView != null)
+        if (removeFloatingWidgetView != null) {
             mWindowManager.removeView(removeFloatingWidgetView);
+        }
+//        if(mVideoPopupWindowView!=null)
+//        {
+//            mWindowManager.removeView(mVideoPopupWindowView);
+//        }
+
         if(mCameraLayout!=null){
             mWindowManager.removeView(mCameraLayout);
             releaseCamera();
@@ -1511,6 +1907,19 @@ BroadcastReceiver screensht=new BroadcastReceiver() {
             stopService(shotIntent);
         }
         stopCapture();
+        if(rec!=null) {
+            unregisterReceiver(rec);
+        }
+        if(stp!=null) {
+            unregisterReceiver(stp);
+        }
+        if(screensht!=null) {
+            unregisterReceiver(screensht);
+        }
+        if(ext!=null) {
+            unregisterReceiver(ext);
+        }
+
     }
 
 
